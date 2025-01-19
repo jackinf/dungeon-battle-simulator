@@ -100,6 +100,25 @@ impl Dungeon {
 pub async fn run_dungeon(dungeon: Arc<Mutex<Dungeon>>) {
     let (tx, mut rx) = tokio::sync::mpsc::channel(32);
 
+    let monster_dungeon = Arc::clone(&dungeon);
+    tokio::spawn(async move {
+        loop {
+            {
+                let mut dungeon = monster_dungeon.lock().await;
+
+                for monster in &dungeon.monsters {
+                    let mut monster = monster.lock().await;
+                    monster.move_randomly(dungeon.grid[0].len(), dungeon.grid.len());
+                }
+
+                // Update the grid for monster positions
+                dungeon.update_grid().await;
+            }
+
+            tokio::time::sleep(Duration::from_millis(1000)).await; // Adjust the interval for monster movement
+        }
+    });
+
     // Spawn a task for rendering and logging
     let render_dungeon = Arc::clone(&dungeon);
     tokio::spawn(async move {

@@ -1,6 +1,6 @@
-use std::sync::Arc;
-use tokio::sync::{Mutex};
 use rand::Rng;
+use std::sync::Arc;
+use tokio::sync::Mutex;
 
 pub struct Entity {
     pub name: String,
@@ -13,7 +13,11 @@ pub struct Entity {
 impl Entity {
     pub fn new(name: &str, health: u32, attack: u32, x: usize, y: usize) -> Self {
         Entity {
-            name: name.to_string(), health, attack, x, y
+            name: name.to_string(),
+            health,
+            attack,
+            x,
+            y,
         }
     }
 
