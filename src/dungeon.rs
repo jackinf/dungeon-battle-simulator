@@ -109,7 +109,7 @@ pub async fn run_dungeon(dungeon: Arc<Mutex<Dungeon>>) {
                 dungeon.update_grid().await; // Update grid based on entity positions
                 dungeon.render_map().await; // Render the map and event log
             }
-            tokio::time::sleep(tokio::time::Duration::from_millis(33)).await;
+            tokio::time::sleep(tokio::time::Duration::from_millis(500)).await;
         }
     });
 
@@ -136,22 +136,28 @@ pub async fn handle_player_input(dungeon: Arc<Mutex<Dungeon>>) {
         if poll(Duration::from_millis(100)).unwrap() {
             if let Event::Key(KeyEvent { code, kind, .. }) = read().unwrap() {
                 if kind == KeyEventKind::Press {
+                    let mut refresh = false;
+
                     match code {
                         KeyCode::Up => {
                             let mut dungeon = dungeon.lock().await;
                             dungeon.move_player(0, -1).await;
+                            refresh = true;
                         }
                         KeyCode::Down => {
                             let mut dungeon = dungeon.lock().await;
                             dungeon.move_player(0, 1).await;
+                            refresh = true;
                         }
                         KeyCode::Left => {
                             let mut dungeon = dungeon.lock().await;
                             dungeon.move_player(-1, 0).await;
+                            refresh = true;
                         }
                         KeyCode::Right => {
                             let mut dungeon = dungeon.lock().await;
                             dungeon.move_player(1, 0).await;
+                            refresh = true;
                         }
                         KeyCode::Char('q') => {
                             // Quit the game
@@ -160,9 +166,15 @@ pub async fn handle_player_input(dungeon: Arc<Mutex<Dungeon>>) {
                         }
                         _ => {}
                     }
+
+                    if refresh {
+                        let mut dungeon = dungeon.lock().await;
+                        dungeon.update_grid().await;
+                        dungeon.render_map().await;
+                    }
                 }
             }
         }
-        tokio::time::sleep(Duration::from_millis(100)).await;
+        // tokio::time::sleep(Duration::from_millis(100)).await;
     }
 }
